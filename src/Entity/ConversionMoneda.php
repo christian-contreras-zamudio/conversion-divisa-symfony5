@@ -2,14 +2,18 @@
 
 namespace App\Entity;
 
+use App\Entity\Timestamps;
 use App\Repository\ConversionMonedaRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity(repositoryClass=ConversionMonedaRepository::class)
+ * @ORM\HasLifecycleCallbacks()
  */
 class ConversionMoneda
 {
+    use Timestamps;
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -31,6 +35,11 @@ class ConversionMoneda
      * @ORM\Column(type="string", length=10)
      */
     private $to_currency;
+
+    /**
+     * @ORM\Column(type="integer")
+     */
+    private $total;
 
     public function getId(): ?int
     {
@@ -69,6 +78,18 @@ class ConversionMoneda
     public function setToCurrency(string $to_currency): self
     {
         $this->to_currency = $to_currency;
+
+        return $this;
+    }
+
+    public function getTotal(): ?int
+    {
+        return $this->total;
+    }
+
+    public function setTotal(int $total): self
+    {
+        $this->total = $total;
 
         return $this;
     }
