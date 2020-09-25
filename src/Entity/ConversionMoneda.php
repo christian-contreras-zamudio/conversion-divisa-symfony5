@@ -22,7 +22,7 @@ class ConversionMoneda
     private $id;
 
     /**
-     * @ORM\Column(type="decimal", scale=2)
+     * @ORM\Column(type="decimal", scale=6)
      */
     private $amount;
 
@@ -36,17 +36,10 @@ class ConversionMoneda
      */
     private $to_currency;
 
-    /**
-     * @ORM\Column(type="decimal", scale=2)
-     */
-    private $total;
-
     public function getId(): ?int
     {
         return $this->id;
     }
-
-  
 
     public function getFromCurrency(): ?string
     {
@@ -83,18 +76,4 @@ class ConversionMoneda
 
         return $this;
     }
-
-    public function getTotal(): ?string
-    {
-        return $this->total;
-    }
-
-    public function setTotal(string $total): self
-    {
-        $this->total = $total;
-
-        return $this;
-    }
-
-    
 }

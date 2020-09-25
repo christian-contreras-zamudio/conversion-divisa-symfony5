@@ -36,35 +36,44 @@ class ConversionMonedaController extends AbstractFOSRestController
     {
         $from = $request->request->get('from'); // == Otenemos params para construir url
         $to = $request->request->get('to'); // == Otenemos params para construir url
-        $monto = $request->request->get('monto') !== null ? $request->request->get('monto') : 1; // == Monto a convertir
-        if (isset($from) && !empty($from) && isset($to) && !empty($to)) {
-            $formar_url = $this->formarUrl(['from' => $from, "to" => $to]); // == Construimos url con las divisas
-            $response = $this->client->request('GET', $formar_url->url); // consultamos endpoint
-            $content = $response->getContent(); // $contentType = 'application/json'
-            $content = $response->toArray(); // convertimos contenido a array
-            $total = $monto * $content[$formar_url->from_to]; // total de monto convertido
 
-            $data = [
-                'total' => $total,
-                'tipo_cambio' => $content[$formar_url->from_to]
-            ]; // array para respuesta al cliente
-
-            // == guardar en bd
-            $conversion = new ConversionMoneda;
-            $conversion->setAmount($monto);
-            $conversion->setFromCurrency($formar_url->from);
-            $conversion->setToCurrency($formar_url->to);
-            $conversion->setTotal($monto);
-            $this->em->persist($conversion);
-            $this->em->flush();
-
-            return $this->view($data, Response::HTTP_OK);
-        } else {
-            $data = [
-                'message' => 'Error en los datos enviados'
-            ];
-            return $this->view($data, Response::HTTP_BAD_REQUEST);
+        // == Respuesta 400 si no vienen completos los parametros
+        if (isset($from) && empty($from) || isset($to) && empty($to)) {
+            return $this->view([
+                'message' => 'Error en los parametros enviados'
+            ], Response::HTTP_BAD_REQUEST);
         }
+
+        $formar_url = $this->formarUrl(['from' => $from, "to" => $to]); // == Construimos url con las divisas
+        $response = $this->client->request('GET', $formar_url->url); // consultamos endpoint
+
+        $statusCode = $response->getStatusCode();
+
+        // == Respuesta 500 si el servicio no responde
+        if ($statusCode != 200) {
+            return $this->view([
+                'message' => 'Servicio no disponible intente de nuevo'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        $content = $response->getContent(); // $contentType = 'application/json'
+        $content = $response->toArray(); // convertimos contenido a array
+
+        $data = [
+            'tipo_cambio' => $content[$formar_url->from_to],
+            'from' => $formar_url->from,
+            'to' => $formar_url->to,
+        ]; // array para respuesta al cliente
+
+        // == guardar en bd
+        $conversion = new ConversionMoneda;
+        $conversion->setAmount($content[$formar_url->from_to]);
+        $conversion->setFromCurrency($formar_url->from);
+        $conversion->setToCurrency($formar_url->to);
+        $this->em->persist($conversion);
+        $this->em->flush();
+
+        return $this->view($data, Response::HTTP_OK);
     }
 
     /**
