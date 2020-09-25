@@ -30,6 +30,7 @@ class ConversionMonedaController extends AbstractFOSRestController
     }
 
     /**
+     * Consulta el api currconv y guarda en la tabla conversion_moneda el resultado de cada moneda
      * @Rest\Post("/convertir", name="listado")
      */
     public function index(Request $request)
@@ -52,7 +53,7 @@ class ConversionMonedaController extends AbstractFOSRestController
         // == Respuesta 500 si el servicio no responde
         if ($statusCode != 200) {
             return $this->view([
-                'message' => 'Servicio no disponible intente de nuevo'
+                'message' => '¡Ups! ocurrió un error, servicio no disponible.'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
@@ -73,6 +74,16 @@ class ConversionMonedaController extends AbstractFOSRestController
         $this->em->persist($conversion);
         $this->em->flush();
 
+        return $this->view($data, Response::HTTP_OK);
+    }
+
+    /**
+     * Devuelve todo de la tabla conversion_moneda
+     * @Rest\Get("/historial", name="historial")
+     */
+    public function historial()
+    {
+        $data = $this->em->getRepository(ConversionMoneda::class)->findAll();
         return $this->view($data, Response::HTTP_OK);
     }
 
