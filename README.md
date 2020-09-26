@@ -22,7 +22,10 @@ composer install
 ## 3 - Crear base de datos y tablas
 Dentro de la carpeta del proyecto ejecutar los siguientes comandos para crear la base de datos y tablas
 ~~~ bash
-composer install
+php bin/console doctrine:database:create
+~~~
+~~~ bash
+php bin/console doctrine:schema:update --force
 ~~~
 
 ## 4 - Ejecutar el servidor
